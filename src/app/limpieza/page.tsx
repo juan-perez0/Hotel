@@ -66,7 +66,17 @@ export default function LimpiezaDashboard() {
     setNotas(h.notas_empleada || '');
   };
 
-  const pisosUnicos = Array.from(new Set(habitaciones.map(h => h.piso))).sort((a,b) => a - b);
+  const pisosUnicos = Array.from(new Set(habitaciones.map(h => h.piso))).sort((a, b) => a - b);
+
+  // Paleta de colores unificada para todos los estados
+  const estadoPaleta: Record<string, { bg: string; color: string; label: string }> = {
+    DISPONIBLE:        { bg: '#ECFDF5', color: '#047857', label: 'Disponible' },
+    OCUPADA:           { bg: '#FEF2F2', color: '#B91C1C', label: 'Ocupada' },
+    REQUIERE_LIMPIEZA: { bg: '#FFF7ED', color: '#C2410C', label: 'Requiere Limpieza' },
+    LIMPIEZA:          { bg: '#EFF6FF', color: '#1D4ED8', label: 'En Limpieza' },
+    MANTENIMIENTO:     { bg: '#F1F5F9', color: '#334155', label: 'Mantenimiento' },
+    RESERVADA:         { bg: '#F3E8FF', color: '#7C3AED', label: 'Reservada' },
+  };
 
   return (
     <div className="premium-container" style={{ alignItems: 'flex-start', padding: '40px' }}>
@@ -86,6 +96,7 @@ export default function LimpiezaDashboard() {
 
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(350px, 1fr) 2.5fr', gap: '30px' }}>
           
+          {/* Panel de actualización */}
           <div className="premium-card" style={{ height: 'fit-content' }}>
             <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Actualizar Estado</h2>
             {error && <div className="error-message">{error}</div>}
@@ -93,8 +104,14 @@ export default function LimpiezaDashboard() {
             <form onSubmit={handleUpdate}>
               <div className="form-group">
                 <label>Habitación Seleccionada</label>
-                <div style={{ padding: '12px 16px', background: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0', fontWeight: 600, color: selectedId ? '#1E293B' : '#94A3B8' }}>
-                  {selectedId ? `Hab. #${habitaciones.find(h => h.id === selectedId)?.numero}` : 'Ninguna seleccionada'}
+                <div style={{
+                  padding: '12px 16px', background: '#F8FAFC', borderRadius: '8px',
+                  border: '1px solid #E2E8F0', fontWeight: 600,
+                  color: selectedId ? '#1E293B' : '#94A3B8'
+                }}>
+                  {selectedId
+                    ? `Hab. #${habitaciones.find(h => h.id === selectedId)?.numero}`
+                    : 'Ninguna seleccionada'}
                 </div>
               </div>
 
@@ -103,21 +120,22 @@ export default function LimpiezaDashboard() {
                   <div className="form-group">
                     <label>Nuevo Estado Físico</label>
                     <select className="premium-input" value={estadoSelect} onChange={e => setEstadoSelect(e.target.value)}>
-                      <option value="DISPONIBLE">Disponible - Limpia</option>
+                      <option value="DISPONIBLE">Disponible — Limpia</option>
                       <option value="OCUPADA">Ocupada por Cliente (No Entrar)</option>
                       <option value="REQUIERE_LIMPIEZA">Requiere Limpieza (Check-Out)</option>
                       <option value="LIMPIEZA">Aseo en Progreso</option>
+                      <option value="RESERVADA">Reservada (Pre-Reserva)</option>
                       <option value="MANTENIMIENTO">En Mantenimiento General</option>
                     </select>
                   </div>
                   
                   <div className="form-group">
                     <label>Observaciones (Opcional)</label>
-                    <textarea 
-                      className="premium-input" 
-                      rows={4} 
-                      value={notas} 
-                      onChange={e => setNotas(e.target.value)} 
+                    <textarea
+                      className="premium-input"
+                      rows={4}
+                      value={notas}
+                      onChange={e => setNotas(e.target.value)}
                       placeholder="Ej: Faltan toallas, jabones agotados..."
                       style={{ resize: 'none', fontFamily: 'inherit' }}
                     />
@@ -131,38 +149,68 @@ export default function LimpiezaDashboard() {
             </form>
           </div>
 
+          {/* Cuadrícula operativa */}
           <div className="premium-card" style={{ padding: '30px' }}>
             <h2 style={{ fontSize: '20px', marginBottom: '20px' }}>Cuadrícula Operativa</h2>
-            {habitaciones.length === 0 && <p style={{ color: '#64748B' }}>Cargando datos o no hay habitaciones configuradas.</p>}
+            {habitaciones.length === 0 && (
+              <p style={{ color: '#64748B' }}>Cargando datos o no hay habitaciones configuradas.</p>
+            )}
             
             {pisosUnicos.map(piso => (
               <div key={piso} style={{ marginBottom: '30px' }}>
-                <h3 style={{ fontSize: '18px', color: '#334155', borderBottom: '2px solid #E2E8F0', paddingBottom: '8px', marginBottom: '16px' }}>Planta / Piso {piso}</h3>
+                <h3 style={{
+                  fontSize: '18px', color: '#334155',
+                  borderBottom: '2px solid #E2E8F0', paddingBottom: '8px', marginBottom: '16px'
+                }}>
+                  Planta / Piso {piso}
+                </h3>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '15px' }}>
-                  {habitaciones.filter(h => h.piso === piso).map(h => (
-                    <div 
-                      key={h.id} 
-                      onClick={() => seleccionar(h)}
-                      style={{
-                      cursor: 'pointer',
-                      padding: '20px 10px', textAlign: 'center', borderRadius: '12px',
-                      background: h.estado === 'DISPONIBLE' ? '#ECFDF5' : (h.estado === 'OCUPADA' ? '#FEF2F2' : (h.estado === 'REQUIERE_LIMPIEZA' ? '#FFF7ED' : (h.estado === 'LIMPIEZA' ? '#EFF6FF' : '#F1F5F9'))),
-                      color: h.estado === 'DISPONIBLE' ? '#047857' : (h.estado === 'OCUPADA' ? '#B91C1C' : (h.estado === 'REQUIERE_LIMPIEZA' ? '#C2410C' : (h.estado === 'LIMPIEZA' ? '#1D4ED8' : '#334155'))),
-                      border: `2px solid ${selectedId === h.id ? '#6366F1' : 'transparent'}`,
-                      boxShadow: selectedId === h.id ? '0 0 0 3px rgba(99, 102, 241, 0.2)' : '0 2px 4px rgba(0,0,0,0.02)',
-                      transition: 'all 0.2s',
-                    }}>
-                      <div style={{ fontSize: '22px', fontWeight: 700, marginBottom: '6px' }}>{h.numero}</div>
-                      <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>{h.estado.replace('_', ' ')}</div>
-                    </div>
-                  ))}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '15px' }}>
+                  {habitaciones.filter(h => h.piso === piso).map(h => {
+                    const pal = estadoPaleta[h.estado] ?? { bg: '#F1F5F9', color: '#334155', label: h.estado };
+                    return (
+                      <div
+                        key={h.id}
+                        onClick={() => seleccionar(h)}
+                        style={{
+                          cursor: 'pointer',
+                          padding: '20px 10px',
+                          textAlign: 'center',
+                          borderRadius: '12px',
+                          background: pal.bg,
+                          color: pal.color,
+                          border: `2px solid ${selectedId === h.id ? '#6366F1' : 'transparent'}`,
+                          boxShadow: selectedId === h.id
+                            ? '0 0 0 3px rgba(99, 102, 241, 0.2)'
+                            : '0 2px 4px rgba(0,0,0,0.04)',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <div style={{ fontSize: '22px', fontWeight: 700, marginBottom: '6px' }}>{h.numero}</div>
+                        <div style={{ fontSize: '11px', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
+                          {pal.label}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
             
+            {/* Leyenda y referencias */}
             <div style={{ marginTop: '30px', padding: '16px', background: '#F8FAFC', borderRadius: '8px', fontSize: '13px', color: '#64748B' }}>
-              <strong style={{ color: '#475569' }}>Instrucciones:</strong> Toca cualquier habitación de la cuadrícula para abrir el menú de modificación interactivo.
+              <strong style={{ color: '#475569', display: 'block', marginBottom: '10px' }}>Referencias de estado:</strong>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px' }}>
+                {Object.entries(estadoPaleta).map(([, pal]) => (
+                  <span key={pal.label} style={{
+                    fontSize: '11px', fontWeight: 600, padding: '4px 10px', borderRadius: '20px',
+                    background: pal.bg, color: pal.color,
+                  }}>
+                    {pal.label}
+                  </span>
+                ))}
+              </div>
+              <p>Toca cualquier habitación de la cuadrícula para abrir el menú de modificación.</p>
             </div>
           </div>
 

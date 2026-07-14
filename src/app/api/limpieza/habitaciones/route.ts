@@ -10,7 +10,7 @@ async function hasAccess() {
   try {
     const payload = await verifyAuth(token);
     return payload.rol === 'ADMIN' || payload.rol === 'EMPLEADA';
-  } catch(e) { return false; }
+  } catch { return false; }
 }
 
 export async function GET() {

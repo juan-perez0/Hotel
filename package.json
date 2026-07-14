@@ -1,5 +1,5 @@
 {
-  "name": "backend",
+  "name": "hotel-management",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,15 +12,12 @@
     "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
     "jose": "^6.2.2",
-    "jsonwebtoken": "^9.0.3",
     "next": "16.2.2",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "xlsx": "^0.18.5"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
-    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

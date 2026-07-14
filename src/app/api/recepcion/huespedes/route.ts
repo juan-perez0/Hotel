@@ -10,7 +10,7 @@ async function hasAccess() {
   try {
     const payload = await verifyAuth(token);
     return payload.rol === 'ADMIN' || payload.rol === 'RECEPCIONISTA';
-  } catch(e) { return false; }
+  } catch { return false; }
 }
 
 export async function GET() {
@@ -53,7 +53,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(huesped);
-  } catch(e) {
+  } catch {
     return NextResponse.json({ error: 'Error al registrar huésped.' }, { status: 400 });
   }
 }

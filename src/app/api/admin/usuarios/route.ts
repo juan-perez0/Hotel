@@ -11,7 +11,7 @@ async function isAdmin() {
   try {
     const payload = await verifyAuth(token);
     return payload.rol === 'ADMIN';
-  } catch(e) { return false; }
+  } catch { return false; }
 }
 
 export async function GET() {
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       data: { nombre, email, password: hashedPassword, rol }
     });
     return NextResponse.json({ id: usuario.id, email: usuario.email });
-  } catch(e) {
+  } catch {
     return NextResponse.json({ error: 'Error al crear usuario. El email podría estar duplicado.' }, { status: 400 });
   }
 }

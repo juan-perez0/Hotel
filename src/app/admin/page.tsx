@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import * as XLSX from 'xlsx';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import NubeObservaciones from '@/components/NubeObservaciones';
@@ -31,7 +30,7 @@ export default function AdminDashboard() {
   const [errorHabitacion, setErrorHabitacion] = useState('');
   const [exitoHabitacion, setExitoHabitacion] = useState('');
 
-  const [loadingExport, setLoadingExport] = useState(false);
+
 
   const fetchUsuarios = async () => {
     const res = await fetch('/api/admin/usuarios');
@@ -91,68 +90,7 @@ export default function AdminDashboard() {
     setLoadingHabitacion(false);
   };
 
-  const exportUsuariosAExcel = () => {
-    const data = usuarios.map(u => ({
-      ID: u.id,
-      Nombre: u.nombre,
-      Email: u.email,
-      Rol: u.rol,
-      'Fecha Creación': new Date(u.createdAt).toLocaleDateString()
-    }));
-    
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Usuarios");
-    XLSX.writeFile(workbook, `Reporte_Usuarios_${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
 
-  const exportLimpiezasAExcel = async () => {
-    setLoadingExport(true);
-    try {
-      const res = await fetch('/api/admin/reportes/limpieza');
-      const limpiezas = await res.json();
-      
-      const data = limpiezas.map((l: any) => ({
-        ID: l.id,
-        Habitacion: l.habitacion?.numero || 'N/A',
-        Piso: l.habitacion?.piso || 'N/A',
-        'Empleada A cargo': l.empleada?.nombre || 'N/A',
-        Email: l.empleada?.email || 'N/A',
-        'Estado Anterior': l.estadoAnterior,
-        'Estado Nuevo': l.estadoNuevo,
-        Observaciones: l.observaciones,
-        Fecha: new Date(l.fecha).toLocaleString()
-      }));
-      
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Reporte_Aseo");
-      XLSX.writeFile(workbook, `Auditoria_Limpieza_${new Date().toISOString().split('T')[0]}.xlsx`);
-    } catch(e) {}
-    setLoadingExport(false);
-  };
-
-  const exportHabitacionesAExcel = async () => {
-    setLoadingExport(true);
-    try {
-      const res = await fetch('/api/recepcion/habitaciones');
-      const habitaciones = await res.json();
-      
-      const data = habitaciones.map((h: any) => ({
-        'Número': h.numero,
-        Piso: h.piso,
-        Estado: h.estado,
-        Observaciones: h.notas_empleada,
-        'Fecha Alta': new Date(h.createdAt).toLocaleDateString()
-      }));
-      
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Habitaciones");
-      XLSX.writeFile(workbook, `Inventario_Habitaciones_${new Date().toISOString().split('T')[0]}.xlsx`);
-    } catch(e) {}
-    setLoadingExport(false);
-  };
 
   return (
     <div className="premium-container" style={{ alignItems: 'flex-start', padding: '40px' }}>
@@ -177,23 +115,12 @@ export default function AdminDashboard() {
                <Link href="/recepcion" className="premium-btn" style={{ background: '#3B82F6', textDecoration: 'none', display: 'inline-block', width: 'auto', padding: '10px 20px', margin: 0 }}>
                  Acceder a Recepción
                </Link>
+               <Link href="/recepcion/reservas" className="premium-btn" style={{ background: '#10B981', textDecoration: 'none', display: 'inline-block', width: 'auto', padding: '10px 20px', margin: 0 }}>
+                 Calendario de Reservas
+               </Link>
                <Link href="/limpieza" className="premium-btn" style={{ background: '#6366F1', textDecoration: 'none', display: 'inline-block', width: 'auto', padding: '10px 20px', margin: 0 }}>
                  Acceder a Limpieza
                </Link>
-             </div>
-           </div>
-           <div>
-             <h3 style={{ fontSize: '16px', color: '#334155', marginBottom: '12px' }}>Descarga de Auditoría y Reportes (.xlsx)</h3>
-             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-               <button onClick={exportUsuariosAExcel} disabled={loadingExport} className="premium-btn" style={{ background: '#10B981', margin: 0, padding: '10px 20px', width: 'auto' }}>
-                 ↓ Reporte Usuarios
-               </button>
-               <button onClick={exportLimpiezasAExcel} disabled={loadingExport} className="premium-btn" style={{ background: '#059669', margin: 0, padding: '10px 20px', width: 'auto' }}>
-                 ↓ Auditoría Aseo / Limpieza
-               </button>
-               <button onClick={exportHabitacionesAExcel} disabled={loadingExport} className="premium-btn" style={{ background: '#047857', margin: 0, padding: '10px 20px', width: 'auto' }}>
-                 ↓ Reporte Habitaciones
-               </button>
              </div>
            </div>
         </div>
