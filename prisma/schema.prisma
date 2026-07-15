@@ -36,7 +36,7 @@ model huesped {
   tipo_acomodacion      String?
   valor_pagado          Float       @default(0)
   createdAt             DateTime    @default(now())
-  updatedAt             DateTime
+  updatedAt DateTime @updatedAt
   habitacion            habitacion? @relation(fields: [habitacionId], references: [id], map: "Huesped_habitacionId_fkey")
   pago                  pago[]
 
@@ -75,7 +75,7 @@ model reserva {
   fecha        String      @unique(map: "Reserva_fecha_key")
   notas        String      @db.Text
   createdAt    DateTime    @default(now())
-  updatedAt    DateTime
+  updatedAt DateTime @updatedAt
   habitacionId Int?
   habitacion   habitacion? @relation(fields: [habitacionId], references: [id], map: "Reserva_habitacionId_fkey")
 
@@ -89,7 +89,7 @@ model usuario {
   password  String
   rol       usuario_rol @default(EMPLEADA)
   createdAt DateTime    @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
   limpieza  limpieza[]
 }
 
