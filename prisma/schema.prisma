@@ -14,7 +14,7 @@ model habitacion {
   estado         habitacion_estado @default(DISPONIBLE)
   notas_empleada String?           @db.Text
   createdAt      DateTime          @default(now())
-  updatedAt      DateTime
+  updatedAt DateTime @updatedAt
   huesped        huesped[]
   limpieza       limpieza[]
   reserva        reserva[]
@@ -36,7 +36,7 @@ model huesped {
   tipo_acomodacion      String?
   valor_pagado          Float       @default(0)
   createdAt             DateTime    @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt             DateTime    @updatedAt
   habitacion            habitacion? @relation(fields: [habitacionId], references: [id], map: "Huesped_habitacionId_fkey")
   pago                  pago[]
 
