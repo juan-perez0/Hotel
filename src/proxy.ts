@@ -6,7 +6,7 @@ export async function proxy(req: NextRequest) {
   const token = req.cookies.get('token')?.value;
 
   const url = req.nextUrl;
-  
+
   // Rutas públicas: auth APIs, login, y assets de Next.js
   if (url.pathname.startsWith('/api/auth') || url.pathname.startsWith('/_next')) {
     return NextResponse.next();
@@ -47,8 +47,8 @@ export async function proxy(req: NextRequest) {
     }
 
     if (url.pathname === '/') {
-       const dest = rol === 'ADMIN' ? '/admin' : rol === 'RECEPCIONISTA' ? '/recepcion' : '/limpieza';
-       return NextResponse.redirect(new URL(dest, req.url));
+      const dest = rol === 'ADMIN' ? '/admin' : rol === 'RECEPCIONISTA' ? '/recepcion' : '/limpieza';
+      return NextResponse.redirect(new URL(dest, req.url));
     }
 
     return NextResponse.next();

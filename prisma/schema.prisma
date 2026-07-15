@@ -1,52 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model habitacion {
+  id             Int               @id @default(autoincrement())
+  numero         String            @unique(map: "Habitacion_numero_key")
+  piso           Int               @default(1)
+  estado         habitacion_estado @default(DISPONIBLE)
+  notas_empleada String?           @db.Text
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime
+  huesped        huesped[]
+  limpieza       limpieza[]
+  reserva        reserva[]
 }
 
-enum Rol {
-  ADMIN
-  RECEPCIONISTA
-  EMPLEADA
-}
-
-enum EstadoHabitacion {
-  DISPONIBLE
-  OCUPADA
-  REQUIERE_LIMPIEZA
-  LIMPIEZA
-  MANTENIMIENTO
-  RESERVADA
-}
-
-model Usuario {
-  id        Int        @id @default(autoincrement())
-  nombre    String
-  email     String     @unique
-  password  String
-  rol       Rol        @default(EMPLEADA)
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Limpiezas Limpieza[]
-}
-
-model Habitacion {
-  id             Int              @id @default(autoincrement())
-  numero         String           @unique
-  piso           Int              @default(1)
-  estado         EstadoHabitacion @default(DISPONIBLE)
-  notas_empleada String?          @db.Text
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  Huespedes      Huesped[]
-  Limpiezas      Limpieza[]
-  Reservas       Reserva[]
-}
-
-model Huesped {
+model huesped {
   id                    Int         @id @default(autoincrement())
   tipo_identificacion   String
   numero_identificacion String
@@ -55,48 +29,99 @@ model Huesped {
   ciudad_residencia     String?
   ciudad_procedencia    String?
   habitacionId          Int?
-  habitacion            Habitacion? @relation(fields: [habitacionId], references: [id])
   motivo_viaje          String?
   numero_acompanantes   Int         @default(0)
   check_in              DateTime    @default(now())
   check_out             DateTime?
   tipo_acomodacion      String?
   valor_pagado          Float       @default(0)
-
-  pagos                 Pago[]
-
   createdAt             DateTime    @default(now())
-  updatedAt             DateTime    @updatedAt
+  updatedAt             DateTime
+  habitacion            habitacion? @relation(fields: [habitacionId], references: [id], map: "Huesped_habitacionId_fkey")
+  pago                  pago[]
+
+  @@index([habitacionId], map: "Huesped_habitacionId_fkey")
 }
 
-model Pago {
+model limpieza {
+  id             Int                     @id @default(autoincrement())
+  habitacionId   Int
+  empleadaId     Int
+  estadoAnterior limpieza_estadoAnterior
+  estadoNuevo    limpieza_estadoNuevo
+  observaciones  String?                 @db.Text
+  fecha          DateTime                @default(now())
+  usuario        usuario                 @relation(fields: [empleadaId], references: [id], map: "Limpieza_empleadaId_fkey")
+  habitacion     habitacion              @relation(fields: [habitacionId], references: [id], map: "Limpieza_habitacionId_fkey")
+
+  @@index([empleadaId], map: "Limpieza_empleadaId_fkey")
+  @@index([habitacionId], map: "Limpieza_habitacionId_fkey")
+}
+
+model pago {
   id          Int      @id @default(autoincrement())
   huespedId   Int
-  huesped     Huesped  @relation(fields: [huespedId], references: [id])
   monto       Float
   metodo      String
   descripcion String?
   fecha       DateTime @default(now())
+  huesped     huesped  @relation(fields: [huespedId], references: [id], map: "Pago_huespedId_fkey")
+
+  @@index([huespedId], map: "Pago_huespedId_fkey")
 }
 
-model Limpieza {
-  id             Int              @id @default(autoincrement())
-  habitacionId   Int
-  habitacion     Habitacion       @relation(fields: [habitacionId], references: [id])
-  empleadaId     Int
-  empleada       Usuario          @relation(fields: [empleadaId], references: [id])
-  estadoAnterior EstadoHabitacion
-  estadoNuevo    EstadoHabitacion
-  observaciones  String?          @db.Text
-  fecha          DateTime         @default(now())
+model reserva {
+  id           Int         @id @default(autoincrement())
+  fecha        String      @unique(map: "Reserva_fecha_key")
+  notas        String      @db.Text
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime
+  habitacionId Int?
+  habitacion   habitacion? @relation(fields: [habitacionId], references: [id], map: "Reserva_habitacionId_fkey")
+
+  @@index([habitacionId], map: "Reserva_habitacionId_fkey")
 }
- 
-model Reserva {
-  id            Int          @id @default(autoincrement())
-  fecha         String       @unique
-  notas         String       @db.Text
-  habitacionId  Int?
-  habitacion    Habitacion?  @relation(fields: [habitacionId], references: [id])
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+
+model usuario {
+  id        Int         @id @default(autoincrement())
+  nombre    String
+  email     String      @unique(map: "Usuario_email_key")
+  password  String
+  rol       usuario_rol @default(EMPLEADA)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime
+  limpieza  limpieza[]
+}
+
+enum habitacion_estado {
+  DISPONIBLE
+  OCUPADA
+  REQUIERE_LIMPIEZA
+  LIMPIEZA
+  MANTENIMIENTO
+  RESERVADA
+}
+
+enum limpieza_estadoAnterior {
+  DISPONIBLE
+  OCUPADA
+  REQUIERE_LIMPIEZA
+  LIMPIEZA
+  MANTENIMIENTO
+  RESERVADA
+}
+
+enum limpieza_estadoNuevo {
+  DISPONIBLE
+  OCUPADA
+  REQUIERE_LIMPIEZA
+  LIMPIEZA
+  MANTENIMIENTO
+  RESERVADA
+}
+
+enum usuario_rol {
+  ADMIN
+  RECEPCIONISTA
+  EMPLEADA
 }
